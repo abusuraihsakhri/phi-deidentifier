@@ -1,0 +1,13 @@
+Patient: John Smith
+DOB: 03/14/1958
+MRN: A1234567
+
+History: John Smith is a 91-year-old male seen in clinic on 01/22/2026 for
+follow-up. Contact number (617) 555-0142, fax (617) 555-0199. Email on file:
+john.smith@example.com. Home address: 452 Oak Street, Boston, MA 02115.
+
+SSN: 044-56-7890. Account Number: 88213456. Emergency contact reached at
+IP 10.0.0.5 via portal www.patientportal.example.com.
+
+Dr. Sarah Johnson signed off on discharge, next appointment scheduled for
+February 3, 2026.

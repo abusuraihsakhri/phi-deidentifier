@@ -1,0 +1,34 @@
+"""Loads the bundled name gazetteer (dictionary of first/last names) used for
+dictionary-based name detection.
+"""
+
+import csv
+import os
+
+DEFAULT_NAMES_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "names.csv"
+)
+
+
+def load_name_gazetteer(path=None):
+    """Load the name gazetteer CSV (columns: name,type where type is 'first' or 'last').
+
+    Returns a dict with keys 'first' and 'last', each a set of upper-cased names.
+    """
+    path = path or DEFAULT_NAMES_PATH
+    first_names = set()
+    last_names = set()
+
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            name = (row.get("name") or "").strip().upper()
+            kind = (row.get("type") or "").strip().lower()
+            if not name:
+                continue
+            if kind == "first":
+                first_names.add(name)
+            elif kind == "last":
+                last_names.add(name)
+
+    return {"first": first_names, "last": last_names, "all": first_names | last_names}
