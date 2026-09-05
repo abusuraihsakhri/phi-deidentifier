@@ -9,8 +9,13 @@ from .deidentifier import CATEGORIES, Deidentifier
 
 def process_file(deid, input_path):
     """Redact a single file. Returns (redacted_text, audit_log, counts)."""
-    with open(input_path, "r", encoding="utf-8") as f:
-        text = f.read()
+    try:
+        with open(input_path, "r", encoding="utf-8") as f:
+            text = f.read()
+    except UnicodeDecodeError:
+        # Retry with latin-1 as fallback for non-UTF-8 files
+        with open(input_path, "r", encoding="latin-1") as f:
+            text = f.read()
 
     redacted_text, audit_log = deid.redact(text)
 

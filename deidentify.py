@@ -51,19 +51,36 @@ def build_parser():
     return parser
 
 
+def _safe_path(path, must_exist=False):
+    """Validate that a path is safe (no traversal) and optionally exists."""
+    path = os.path.normpath(path)
+    if must_exist and not os.path.exists(path):
+        raise FileNotFoundError(f"path does not exist: {path}")
+    return path
+
+
 def run_single_file(args):
+    input_path = _safe_path(args.input, must_exist=True)
     deid = Deidentifier(mode=args.mode)
-    output_path = args.output or _default_single_output(args.input)
-    audit_path = args.audit or _default_single_audit(args.input)
+    output_path = _safe_path(args.output or _default_single_output(input_path))
+    audit_path = _safe_path(args.audit or _default_single_audit(input_path))
 
-    redacted_text, audit_log, counts = process_file(deid, args.input)
+    try:
+        redacted_text, audit_log, counts = process_file(deid, input_path)
+    except (OSError, UnicodeDecodeError) as e:
+        print(f"Error reading {input_path}: {e}", file=sys.stderr)
+        return 1
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(redacted_text)
-    with open(audit_path, "w", encoding="utf-8") as f:
-        json.dump(audit_log, f, indent=2)
+    try:
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(redacted_text)
+        with open(audit_path, "w", encoding="utf-8") as f:
+            json.dump(audit_log, f, indent=2)
+    except OSError as e:
+        print(f"Error writing output: {e}", file=sys.stderr)
+        return 1
 
-    print(f"De-identified: {args.input} -> {output_path}")
+    print(f"De-identified: {input_path} -> {output_path}")
     print(f"Audit log: {audit_path}")
     print(f"Total redactions: {len(audit_log)}")
     for cat in CATEGORIES:
@@ -73,14 +90,23 @@ def run_single_file(args):
 
 
 def run_batch(args):
-    output_dir = args.output or _default_batch_output(args.input)
+    input_dir = _safe_path(args.input, must_exist=True)
+    if not os.path.isdir(input_dir):
+        print(f"Error: input path is not a directory: {input_dir}", file=sys.stderr)
+        return 1
+
+    output_dir = args.output or _default_batch_output(input_dir)
     audit_dir = args.audit or os.path.join(output_dir, "audit")
     report_path = args.report or os.path.join(output_dir, "deid_report.csv")
 
-    report = process_directory(args.input, output_dir, audit_dir, mode=args.mode)
-    write_report_csv(report, report_path)
+    try:
+        report = process_directory(input_dir, output_dir, audit_dir, mode=args.mode)
+        write_report_csv(report, report_path)
+    except OSError as e:
+        print(f"Error during batch processing: {e}", file=sys.stderr)
+        return 1
 
-    print(f"Processed {report['total_files']} file(s) from {args.input}")
+    print(f"Processed {report['total_files']} file(s) from {input_dir}")
     print(f"Redacted text written to: {output_dir}")
     print(f"Per-file audit logs written to: {audit_dir}")
     print(f"Summary report: {report_path}")
@@ -110,8 +136,10 @@ def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    if not os.path.exists(args.input):
-        parser.error(f"input path does not exist: {args.input}")
+    try:
+        _safe_path(args.input, must_exist=True)
+    except FileNotFoundError as e:
+        parser.error(str(e))
 
     if os.path.isdir(args.input):
         return run_batch(args)
