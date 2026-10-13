@@ -1,0 +1,16 @@
+.git
+.github
+.env
+.env.*
+*.audit.json
+*.deid.txt
+*_deidentified/
+deid_report.csv
+__pycache__/
+.pytest_cache/
+*.pyc
+.venv/
+venv/
+dist/
+build/
+*.egg-info/

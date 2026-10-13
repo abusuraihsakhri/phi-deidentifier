@@ -24,17 +24,28 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install fastapi uvicorn pydantic pytest
+        pip install -e ".[dev]"
 
     - name: Run Pytest Suite
       run: |
         pytest -v
 
-    - name: Security SAST & Zero-PHI Audit
+    - name: Validate browser JavaScript
       run: |
-        python -c "
-        from agents.base import PHIGuard, AuditLogger
-        import pytest
-        assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
-        "
+        python - <<'PY'
+        from pathlib import Path
+        html = Path("web/index.html").read_text()
+        script = html.split("<script>\n", 1)[1].split("</script>", 1)[0]
+        Path("/tmp/phi-web.js").write_text(script)
+        PY
+        node --check /tmp/phi-web.js
+
+    - name: Test built wheel outside source directory
+      run: |
+        python -m pip wheel . --no-deps -w /tmp/phi-wheels
+        python -m pip install --force-reinstall --no-deps /tmp/phi-wheels/*.whl
+        (cd /tmp && PYTHONPATH= phi-deid --help)
+        (cd /tmp && PYTHONPATH= python -c "from phi_deid.gazetteer import load_name_gazetteer; assert 'JOHN' in load_name_gazetteer()['all']")
+
+    - name: Compile Python sources
+      run: python -m compileall -q phi_deid agents deidentify.py cli.py

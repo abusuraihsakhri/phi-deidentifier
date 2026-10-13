@@ -78,7 +78,7 @@ class Deidentifier:
         """Redact PHI in `text`.
 
         Returns (redacted_text, audit_log) where audit_log is a list of dicts
-        with keys: category, rule, start, end, original, replacement.
+        with keys: category, rule, start, end, replacement. Raw PHI is excluded.
         """
         self._surrogate_map = {}
         self._surrogate_counters = {}
@@ -92,7 +92,6 @@ class Deidentifier:
                 "rule": m.rule,
                 "start": m.start,
                 "end": m.end,
-                "original": m.text,
                 "replacement": self._peek_replacement(m.category, m.text),
             }
             for m in matches

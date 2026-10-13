@@ -6,9 +6,11 @@ import csv
 import os
 import warnings
 
-DEFAULT_NAMES_PATH = os.path.join(
+_PACKAGE_PATH = os.path.join(os.path.dirname(__file__), "data", "names.csv")
+_SOURCE_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "names.csv"
 )
+DEFAULT_NAMES_PATH = _PACKAGE_PATH if os.path.isfile(_PACKAGE_PATH) else _SOURCE_PATH
 
 
 def load_name_gazetteer(path=None):

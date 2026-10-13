@@ -33,6 +33,8 @@ def process_directory(input_dir, output_dir, audit_dir, mode="mask", pattern="*.
     `audit_dir`, and returns a summary report: a list of per-file stats plus
     the totals across the whole batch.
     """
+    if os.path.realpath(input_dir) == os.path.realpath(output_dir):
+        raise ValueError("Output directory must differ from input directory")
     os.makedirs(output_dir, exist_ok=True)
     os.makedirs(audit_dir, exist_ok=True)
 
@@ -76,6 +78,7 @@ def process_directory(input_dir, output_dir, audit_dir, mode="mask", pattern="*.
 
 
 def write_report_csv(report, report_path):
+    os.makedirs(os.path.dirname(os.path.abspath(report_path)), exist_ok=True)
     fieldnames = ["file", "total_redactions"] + CATEGORIES
     with open(report_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
