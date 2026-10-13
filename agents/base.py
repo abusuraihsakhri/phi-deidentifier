@@ -8,6 +8,8 @@ import json
 import time
 import hmac
 import hashlib
+import secrets
+from copy import deepcopy
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timezone
 
@@ -60,12 +62,12 @@ class AuditTrail:
         if not resolved_key:
             import warnings
             warnings.warn(
-                "AUDIT_SECRET_KEY not set; using a non-secret default. "
-                "Set AUDIT_SECRET_KEY in production.",
+                "AUDIT_SECRET_KEY not set; using an ephemeral random key. "
+                "Set AUDIT_SECRET_KEY for a stable audit-signing key.",
                 RuntimeWarning,
                 stacklevel=2,
             )
-            resolved_key = "INSECURE-DEFAULT-CHANGE-ME"
+            resolved_key = secrets.token_hex(32)
         self.secret_key = resolved_key.encode("utf-8")
         self.logs: List[Dict[str, Any]] = []
 
@@ -92,14 +94,27 @@ class AuditTrail:
         return entry
 
     def verify_integrity(self) -> bool:
-        for i, entry in enumerate(self.logs):
-            prev = self.logs[i-1]["current_hash"] if i > 0 else "GENESIS_BLOCK_0000000000000000"
-            if entry["prev_hash"] != prev:
+        previous = "GENESIS_BLOCK_0000000000000000"
+        for entry in self.logs:
+            try:
+                if entry["prev_hash"] != previous:
+                    return False
+                signed = "|".join(str(entry[key]) for key in (
+                    "audit_id", "timestamp", "actor", "actor_tier",
+                    "event_type", "payload_hash", "prev_hash"
+                ))
+                expected = hmac.new(
+                    self.secret_key, signed.encode("utf-8"), hashlib.sha256
+                ).hexdigest()
+                if not hmac.compare_digest(entry["current_hash"], expected):
+                    return False
+                previous = entry["current_hash"]
+            except (KeyError, TypeError):
                 return False
         return True
 
     def get_trail(self) -> List[Dict[str, Any]]:
-        return self.logs
+        return deepcopy(self.logs)
 
 
 GLOBAL_AUDIT = AuditTrail()
