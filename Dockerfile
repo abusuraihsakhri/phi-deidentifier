@@ -9,7 +9,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . .
+COPY pyproject.toml README.md deidentify.py cli.py enrichment.py simulator.py ./
+COPY phi_deid ./phi_deid
+COPY agents ./agents
+COPY data/names.csv ./data/names.csv
 RUN pip install --no-cache-dir .
 
 EXPOSE 8000
