@@ -65,6 +65,12 @@ def run_single_file(args):
     output_path = _safe_path(args.output or _default_single_output(input_path))
     audit_path = _safe_path(args.audit or _default_single_audit(input_path))
 
+    # Refuse to overwrite the original note or reuse the same output path.
+    destinations = [os.path.realpath(output_path), os.path.realpath(audit_path)]
+    if os.path.realpath(input_path) in destinations or destinations[0] == destinations[1]:
+        print("Error: input, output and audit paths must be distinct", file=sys.stderr)
+        return 1
+
     try:
         redacted_text, audit_log, counts = process_file(deid, input_path)
     except (OSError, UnicodeDecodeError) as e:
@@ -72,6 +78,8 @@ def run_single_file(args):
         return 1
 
     try:
+        os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+        os.makedirs(os.path.dirname(os.path.abspath(audit_path)), exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(redacted_text)
         with open(audit_path, "w", encoding="utf-8") as f:
