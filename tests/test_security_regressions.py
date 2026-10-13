@@ -29,7 +29,8 @@ def test_international_and_parenthesized_phone_match():
 
 def test_audit_trail_verifies_signatures_and_defends_its_contents():
     audit = AuditTrail(secret_key="test-secret")
-    audit.log("operator", "reviewer", "TEST", {"status": "SUCCESS"})
+    returned = audit.log("operator", "reviewer", "TEST", {"status": "SUCCESS"})
+    returned["payload_hash"] = "forged"
     assert audit.verify_integrity()
     copy = audit.get_trail()
     copy[0]["payload_hash"] = "forged"
@@ -59,3 +60,12 @@ def test_cli_creates_output_parents(tmp_path):
 
 def test_packaged_gazetteer_has_names():
     assert "JOHN" in load_name_gazetteer()["all"]
+
+
+def test_batch_rejects_in_place_output(tmp_path):
+    source = tmp_path / "notes"
+    source.mkdir()
+    note = source / "note.txt"
+    note.write_text("SSN: 044-56-7890", encoding="utf-8")
+    assert main([str(source), "-o", str(source)]) == 1
+    assert note.read_text(encoding="utf-8") == "SSN: 044-56-7890"
