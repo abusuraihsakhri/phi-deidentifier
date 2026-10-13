@@ -33,8 +33,14 @@ dev = [
 [project.scripts]
 phi-deid = "deidentify.py:main"
 
+[tool.setuptools]
+py-modules = ["deidentify", "cli", "enrichment", "simulator"]
+
 [tool.setuptools.packages.find]
 include = ["phi_deid*", "agents*"]
+
+[tool.setuptools.package-data]
+phi_deid = ["data/names.csv"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "."]
