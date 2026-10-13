@@ -110,7 +110,7 @@ def run_batch(args):
     try:
         report = process_directory(input_dir, output_dir, audit_dir, mode=args.mode)
         write_report_csv(report, report_path)
-    except OSError as e:
+    except (OSError, ValueError) as e:
         print(f"Error during batch processing: {e}", file=sys.stderr)
         return 1
 
