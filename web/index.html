@@ -1,236 +1,188 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phi Deidentifier — Operations Console</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #090d16;
-            --card: #111827;
-            --border: #1f293d;
-            --accent: #3b82f6;
-            --accent-glow: rgba(59, 130, 246, 0.25);
-            --text: #f3f4f6;
-            --text-muted: #9ca3af;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --success: #10b981;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            padding: 2rem;
-            min-height: 100vh;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .header-title h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-        .header-title p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            background: var(--accent-glow);
-            color: var(--accent);
-            border: 1px solid var(--accent);
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 1.5rem;
-        }
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-        .card h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .form-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.65rem 0.9rem;
-            background: #0d1322;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            color: #fff;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-        .btn {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            padding: 0.7rem 1.4rem;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.2s;
-            width: 100%;
-        }
-        .btn:hover { background: #2563eb; }
-        .terminal {
-            background: #060911;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: #10b981;
-            height: 380px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-        }
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        .metric-box {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-        .metric-val { font-size: 1.4rem; font-weight: 700; color: #fff; margin-top: 0.25rem; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
-    </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>PHI De-identifier — Local text redaction</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, Segoe UI, sans-serif; font-size: 16px; background: #f4f7fa; color: #172b42 }
+    * { box-sizing: border-box }
+    body { margin: 0 }
+    main { max-width: 1120px; padding: 24px; margin: 0 auto }
+    header { margin-bottom: 20px }
+    h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 3vw, 2rem) }
+    h2 { font-size: 1.05rem; margin: 0 0 12px }
+    p { line-height: 1.55; margin: 8px 0 }
+    .muted { color: #536579 }
+    .notice { padding: 12px 16px; border: 1px solid #e6bb72; border-radius: 8px; background: #fff9ed; margin: 18px 0 }
+    .notice strong { color: #754d16 }
+    .panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px }
+    section { min-width: 0; background: white; border: 1px solid #dbe2e9; border-radius: 10px; padding: 16px }
+    textarea { width: 100%; min-height: 310px; resize: vertical; background: #fbfdff; border: 1px solid #aabbcd; border-radius: 7px; padding: 12px; line-height: 1.5; font: 0.92rem/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; color: #172b42 }
+    textarea:focus-visible, select:focus-visible, input:focus-visible, button:focus-visible { outline: 3px solid #6b9bff; outline-offset: 2px }
+    textarea[readonly] { background: #f5f8fb }
+    .controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin: 14px 0 }
+    label { font-weight: 600; font-size: 0.9rem }
+    select, input[type=file] { padding: 7px; max-width: 100% }
+    button { border: 1px solid #9bafc1; border-radius: 7px; background: white; color: #172b42; font: inherit; padding: 9px 13px; cursor: pointer }
+    button.primary { background: #155bb0; color: white; border-color: #155bb0; font-weight: 600 }
+    button:disabled { opacity: 0.55; cursor: not-allowed }
+    button:not(:disabled):hover { filter: brightness(0.95) }
+    .status { font-size: 0.9rem; margin: 12px 0; min-height: 1.6em }
+    .statistics { font-size: 0.88rem; color: #42556b; padding: 8px 0; min-height: 2.5em }
+    .footer { font-size: 0.85rem; margin: 20px 0; color: #536579 }
+    @media (max-width: 720px) { .panels { grid-template-columns: 1fr } main { padding: 14px } textarea { min-height: 220px } }
+  </style>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.29.5/full/pyodide.js" defer></script>
 </head>
 <body>
-
-    <div class="header">
-        <div class="header-title">
-            <h1>Phi Deidentifier</h1>
-            <p>Domain: Clinical & Cryptographic AI | Standard: CAP / CLSI / NIST Standards | LabMind-Atlas Architecture</p>
-        </div>
-        <div>
-            <span class="badge">Air-Gapped Active</span>
-            <span class="badge" style="background: rgba(16,185,129,0.2); color: #10b981; border-color: #10b981;">Zero-PHI Guard Active</span>
-        </div>
-    </div>
-
-    <div class="metrics-bar">
-        <div class="metric-box">
-            <div class="metric-label">System Status</div>
-            <div class="metric-val" style="color: var(--success);" id="m-status">OPTIMAL</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Tasks Processed</div>
-            <div class="metric-val" id="m-tasks">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">Audit Blocks Signed</div>
-            <div class="metric-val" id="m-audit">142</div>
-        </div>
-        <div class="metric-box">
-            <div class="metric-label">PHI Interceptions</div>
-            <div class="metric-val" style="color: var(--accent);" id="m-phi">0</div>
-        </div>
-    </div>
-
-    <div class="grid">
-        <div class="card">
-            <h2>⚙️ Dispatch Distributed Component Audit</h2>
-            <div class="form-group">
-                <label>Task / Sample ID</label>
-                <input type="text" id="task_id" value="TASK-2026-LIVE-01">
-            </div>
-            <div class="form-group">
-                <label>Target Identifier</label>
-                <input type="text" id="target_id" value="SPECIMEN-ALPHA-77">
-            </div>
-            <div class="form-group">
-                <label>Primary Measurement / Value</label>
-                <input type="number" id="primary_metric" value="29.4" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Secondary Metric / Kinetic Index</label>
-                <input type="number" id="secondary_metric" value="14.8" step="0.1">
-            </div>
-            <div class="form-group">
-                <label>Status / Phenotype Descriptor</label>
-                <input type="text" id="status_descriptor" value="DISCORDANT_ANOMALY">
-            </div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is_critical" checked> Trigger Emergency / Critical Flag</label>
-            </div>
-            <button class="btn" onclick="runAudit()">Execute Distributed Component Audit</button>
-        </div>
-
-        <div class="card">
-            <h2>📊 Real-Time Consensus Dossier & Audit Log</h2>
-            <div class="terminal" id="outputConsole">// Phi Deidentifier Operations Console Ready
-// Connection established with Air-Gapped Supervisor
-// Cryptographic HMAC-SHA256 audit ledger loaded.
-// Ready for live task payload dispatch...</div>
-        </div>
-    </div>
-
-    <script>
-        async function runAudit() {
-            const consoleEl = document.getElementById('outputConsole');
-            consoleEl.innerText = "// Dispatching task across specialized workers...
-// Invoking InvariantQCWorker, SafetyEscalationWorker, ProtocolWorker...";
-
-            const payload = {
-                task_id: document.getElementById('task_id').value,
-                target_identifier: document.getElementById('target_id').value,
-                primary_metric: parseFloat(document.getElementById('primary_metric').value),
-                secondary_metric: parseFloat(document.getElementById('secondary_metric').value),
-                status_descriptor: document.getElementById('status_descriptor').value,
-                is_critical_flag: document.getElementById('is_critical').checked
-            };
-
-            try {
-                const res = await fetch('/api/audit', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                consoleEl.innerText = JSON.stringify(data, null, 2);
-                document.getElementById('m-tasks').innerText = parseInt(document.getElementById('m-tasks').innerText) + 1;
-                document.getElementById('m-audit').innerText = parseInt(document.getElementById('m-audit').innerText) + 1;
-            } catch (err) {
-                consoleEl.innerText = "// Offline / Simulation Output:\n" + JSON.stringify({
-                    dossier_id: "DOSSIER-SIM-" + Math.floor(Math.random()*10000),
-                    system: "phi-deidentifier",
-                    domain: "Clinical & Cryptographic AI",
-                    task_id: payload.task_id,
-                    overall_urgency: payload.is_critical_flag ? "CRITICAL_STAT_PANIC" : "ELEVATED_RISK",
-                    integrity_status: "DISCORDANT_ANOMALY",
-                    alerts: [
-                        { worker: "InvariantQCWorker", alert: "Primary metric exceeds upper reference bound" },
-                        { worker: "SafetyEscalationWorker", alert: "Critical emergency interlock flag active" }
-                    ],
-                    audit_hash: "HMAC_SHA256_e83f9a72b941d6c381f9"
-                }, null, 2);
-            }
-        }
-    </script>
+<main>
+  <header>
+    <h1>PHI De-identifier</h1>
+    <p class="muted">Rule-based clinical text redaction · Python executed in your browser with Pyodide</p>
+  </header>
+  <div class="notice" role="note">
+    <strong>Research demonstration — not a HIPAA Safe Harbor certification.</strong>
+    Pattern-based detection can miss identifying information, including names and geographic details.
+    Do not enter identifiable patient records or use the output as a substitute for expert review.
+    The Pyodide runtime is loaded from an external CDN; clinical text is not intentionally uploaded by this application.
+  </div>
+  <p id="status" class="status" role="status" aria-live="polite">Loading Python runtime…</p>
+  <div class="controls">
+    <label for="mode">Redaction mode</label>
+    <select id="mode"><option value="mask">Category mask</option><option value="pseudonym">Stable tokens within note</option></select>
+    <label for="file">Open a local .txt file</label>
+    <input id="file" type="file" accept=".txt,text/plain">
+    <button id="redact" class="primary" disabled>Redact text</button>
+    <button id="clear">Clear</button>
+  </div>
+  <div class="panels">
+    <section>
+      <h2><label for="source">Input text</label></h2>
+      <textarea id="source" spellcheck="false" placeholder="Paste synthetic sample text here. Do not paste actual PHI."></textarea>
+    </section>
+    <section>
+      <h2><label for="result">Redacted text</label></h2>
+      <textarea id="result" readonly spellcheck="false" placeholder="The redacted text will appear here."></textarea>
+      <div id="statistics" class="statistics" aria-live="polite">No document processed.</div>
+      <div class="controls">
+        <button id="copy" disabled>Copy redacted text</button>
+        <button id="download" disabled>Save redacted .txt</button>
+      </div>
+    </section>
+  </div>
+  <p class="footer">Local processing only after loading code. No accounts, tracking, browser storage, or application API requests. Maximum input: 1 MB of text. Review redactions manually before any downstream use.</p>
+</main>
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const MAX_BYTES = 1024 * 1024;
+  let runtime = null;
+  const requiredFiles = [
+    "phi_deid/__init__.py",
+    "phi_deid/deidentifier.py",
+    "phi_deid/patterns.py",
+    "phi_deid/gazetteer.py",
+    "phi_deid/data/names.csv"
+  ];
+  function report(message) { $("status").textContent = message; }
+  function byteLength(s) { return new TextEncoder().encode(s).length; }
+  function resetOutput() {
+    $("result").value = "";
+    $("statistics").textContent = "No document processed.";
+    $("copy").disabled = true;
+    $("download").disabled = true;
+  }
+  async function initialize() {
+    try {
+      if (typeof loadPyodide !== "function") throw new Error("Pyodide script unavailable");
+      const pyodide = await loadPyodide({indexURL: "https://cdn.jsdelivr.net/pyodide/v0.29.5/full/"});
+      pyodide.FS.mkdirTree("/home/pyodide/phi_deid/data");
+      for (const path of requiredFiles) {
+        const response = await fetch("./" + path, {cache: "no-store"});
+        if (!response.ok) throw new Error("Cannot load " + path + " (HTTP " + response.status + ")");
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        pyodide.FS.writeFile("/home/pyodide/" + path, bytes);
+      }
+      pyodide.runPython('import sys; sys.path.insert(0, "/home/pyodide"); from phi_deid import Deidentifier');
+      runtime = pyodide;
+      $("redact").disabled = false;
+      report("Python engine ready. Use synthetic data for evaluation.");
+    } catch (error) {
+      report("Unable to load browser Python: " + error.message + ". Run from a web server with internet access.");
+    }
+  }
+  $("file").addEventListener("change", async function () {
+    const file = this.files && this.files[0];
+    if (!file) return;
+    if (file.size > MAX_BYTES) { report("File too large (maximum 1 MB)."); this.value = ""; return; }
+    try {
+      const value = await file.text();
+      if (byteLength(value) > MAX_BYTES) throw new Error("File too large");
+      $("source").value = value;
+      resetOutput();
+      report("Local text file loaded. Content has not been uploaded.");
+    } catch (error) { report("Could not read file: " + error.message); }
+    this.value = "";
+  });
+  $("source").addEventListener("input", resetOutput);
+  $("mode").addEventListener("change", resetOutput);
+  $("clear").addEventListener("click", function () {
+    $("source").value = "";
+    resetOutput();
+    report(runtime ? "Cleared input and output." : "Python engine is not loaded.");
+  });
+  $("redact").addEventListener("click", function () {
+    if (!runtime) return;
+    const input = $("source").value;
+    if (!input) { report("Enter synthetic text before redacting."); return; }
+    if (byteLength(input) > MAX_BYTES) { report("Input exceeds 1 MB. Reduce the text size."); return; }
+    $("redact").disabled = true;
+    try {
+      runtime.globals.set("_web_text", input);
+      runtime.globals.set("_web_mode", $("mode").value);
+      const payload = runtime.runPython(
+        "import json\n" +
+        "from collections import Counter\n" +
+        "def _web_redact(text, mode):\n" +
+        "    result, audit = Deidentifier(mode=mode).redact(text)\n" +
+        "    return json.dumps({'text': result, 'counts': dict(Counter(x['category'] for x in audit)), 'total': len(audit)})\n" +
+        "_web_redact(_web_text, _web_mode)"
+      );
+      const parsed = JSON.parse(payload);
+      $("result").value = parsed.text;
+      const labels = Object.entries(parsed.counts).map(([key, count]) => key + ": " + count);
+      $("statistics").textContent = parsed.total + " matched span(s). " + labels.join(" · ");
+      $("copy").disabled = false;
+      $("download").disabled = false;
+      report("Redaction completed locally. Review the result for missed identifiers.");
+    } catch (error) {
+      resetOutput();
+      report("Redaction failed: " + error.message);
+    } finally {
+      try { runtime.runPython("del _web_text, _web_mode"); } catch (_) { /* initialization may have failed */ }
+      $("redact").disabled = false;
+    }
+  });
+  $("copy").addEventListener("click", async function () {
+    try { await navigator.clipboard.writeText($("result").value); report("Redacted text copied."); }
+    catch (_) { report("Clipboard unavailable. Select the output text and copy manually."); }
+  });
+  $("download").addEventListener("click", function () {
+    const blob = new Blob([$("result").value], {type: "text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "note.deid.txt";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  });
+  window.addEventListener("load", initialize);
+}());
+</script>
 </body>
 </html>
