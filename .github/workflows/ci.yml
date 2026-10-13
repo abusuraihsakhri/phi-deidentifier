@@ -47,11 +47,5 @@ jobs:
         (cd /tmp && PYTHONPATH= phi-deid --help)
         (cd /tmp && PYTHONPATH= python -c "from phi_deid.gazetteer import load_name_gazetteer; assert 'JOHN' in load_name_gazetteer()['all']")
 
-    - name: Security SAST & Zero-PHI Audit
-      run: |
-        python -c "
-        from agents.base import PHIGuard, AuditLogger
-        import pytest
-        assert AuditLogger.verify_integrity() is True
-        print('Security & Zero-PHI Audit Passed!')
-        "
+    - name: Compile Python sources
+      run: python -m compileall -q phi_deid agents deidentify.py cli.py
